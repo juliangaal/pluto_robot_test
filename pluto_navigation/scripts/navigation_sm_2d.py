@@ -44,7 +44,7 @@ class Control(smach.StateMachine):
     @smach.cb_interface(input_keys=['path'])
     def controller_goal_cb(user_data, goal):
         goal.path = user_data.path
-        goal.controller = 'mesh_controller'
+        goal.controller = 'dwa_local_planner'
 
     @staticmethod
     @smach.cb_interface(
@@ -147,7 +147,7 @@ class Planning(smach.StateMachine):
         goal.use_start_pose = False
         goal.tolerance = 0.2  # 20cm tolerance to the target
         goal.target_pose = user_data.target_pose
-        goal.planner = 'mesh_planner'  # name of the planner to call see move base flex planners.yaml config
+        goal.planner = 'global_planner'  # name of the planner to call see move base flex planners.yaml config
 
     @staticmethod
     @smach.cb_interface(
@@ -158,9 +158,9 @@ class Planning(smach.StateMachine):
         user_data.outcome = result.outcome
         user_data.path = result.path
         user_data.cost = result.cost
+        rospy.loginfo("path costs %f", result.cost)
         recovery_behavior = 'clear_costmap'
         if result.outcome == GetPathResult.SUCCESS:
-            rospy.loginfo("path costs %f", result.cost)
             return 'succeeded'
         elif result.outcome == GetPathResult.CANCELED:
             return 'preempted'
